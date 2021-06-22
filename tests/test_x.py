@@ -1,4 +1,5 @@
-from x import X
 
-def test_app(example_fixture):
-    X.run()
+def test_app(client):
+    response = client.get('/')
+    assert response.status_code == 200
+    assert response.get_data() is not None

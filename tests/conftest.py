@@ -1,11 +1,13 @@
 import logging
 import pytest
 
-LOGGER = logging.getLogger(__name__)
+from x.app import init_app
 
 
-@pytest.fixture(scope='function')
-def example_fixture():
-    LOGGER.info("Setting Up Example Fixture...")
-    yield
-    LOGGER.info("Tearing Down Example Fixture...")
+@pytest.fixture
+def client():
+    app = init_app()
+
+    with app.test_client() as client:
+        with app.app_context():
+            yield client

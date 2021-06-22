@@ -1,4 +1,3 @@
-from .app import X
+from x.app import init_app
 
-if __name__ == '__main__':
-    X.run()
+init_app().run(host="0.0.0.0", port=5000)

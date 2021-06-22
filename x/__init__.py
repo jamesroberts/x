@@ -1,1 +1,1 @@
-from .app import X
+from .app import init_app
