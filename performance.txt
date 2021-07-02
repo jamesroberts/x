@@ -1,0 +1,42 @@
+8 Threads, 200 Connections, 30 seconds using wrk benchmark
+wrk -c200 -d30 -t8 http://localhost:5000/
+
+
+## Basic Flask Server
+
+  8 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    94.52ms   65.87ms   1.78s    98.03%
+    Req/Sec   187.64     83.34   383.00     69.62%
+  43949 requests in 30.02s, 6.54MB read
+  Socket errors: connect 0, read 0, write 0, timeout 12
+  Requests/sec:   1463.76
+  Transfer/sec:    223.00KB
+
+
+## Bjoern
+
+  8 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency    34.87ms   48.84ms   1.24s    98.99%
+    Req/Sec   811.31    113.43     2.27k    91.74%
+  192624 requests in 30.02s, 19.47MB read
+
+  Requests/sec:   6415.86
+  Transfer/sec:    664.14KB
+
+
+## Multiple Bjoern processes (8 processes)
+
+ 8 threads and 200 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     4.55ms    1.07ms  13.94ms   62.85%
+    Req/Sec     5.51k   256.07     6.49k    70.21%
+  1317160 requests in 30.01s, 133.15MB read
+
+  Requests/sec:  43891.98
+  Transfer/sec:      4.44MB
+
+
+
+
