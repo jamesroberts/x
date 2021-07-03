@@ -1,5 +1,5 @@
 
 def test_app(client):
-    response = client.get('/')
+    response = client.get('/get')
     assert response.status_code == 200
     assert response.get_data() is not None
