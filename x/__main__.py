@@ -1,6 +1,11 @@
+import pickle
+from multiprocessing.shared_memory import SharedMemory
+from x.shared_cache import SharedCache
+import numpy as np
 import os
 import signal
 import bjoern
+import json
 
 from x.app import init_app
 
@@ -17,6 +22,9 @@ bjoern.listen(init_app(), HOST, PORT)
 main_pid = os.getpid()
 print(f"Main worker on PID {main_pid}")
 
+KB_64 = 1024*64
+cache = SharedCache(name="sharedcache", size=KB_64)
+print("Cache started")
 
 for _ in range(NUM_WORKERS):
     pid = os.fork()
@@ -36,3 +44,4 @@ except KeyboardInterrupt:
     print("Stopping all workers")
     for worker in workers:
         os.kill(worker, signal.SIGINT)
+        cache.shutdown()
