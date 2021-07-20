@@ -23,7 +23,7 @@ main_pid = os.getpid()
 print(f"Main worker on PID {main_pid}")
 
 KB_64 = 1024*64
-cache = SharedCache(name="sharedcache", size=KB_64)
+cache = SharedCache(name="sharedcache")
 print("Cache started")
 
 for _ in range(NUM_WORKERS):
@@ -43,5 +43,9 @@ try:
 except KeyboardInterrupt:
     print("Stopping all workers")
     for worker in workers:
+        cache.close()
         os.kill(worker, signal.SIGINT)
-        cache.shutdown()
+        try:
+            cache.unlink()
+        except FileNotFoundError:
+            pass

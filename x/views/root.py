@@ -4,7 +4,7 @@ from time import sleep
 import random
 
 root = Blueprint("root", __name__)
-cache = SharedCache(name="sharedcache", size=1024*64)
+cache = SharedCache(name="sharedcache")
 
 
 @root.route("/get")
@@ -26,8 +26,7 @@ def compute():
 def data(key):
     ret = cache.get(str(key))
     if ret:
-        return ret
-    print(f"Miss on {key}")
+        return ret.decode()
 
     # simulate work
     sleep(0.2)

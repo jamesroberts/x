@@ -1,57 +1,50 @@
 import json
-from multiprocessing.shared_memory import SharedMemory
+import sys
+from multiprocessing.shared_memory import ShareableList, SharedMemory
+from hashlib import sha256
 
 
 class SharedCache:
     """In memory cache that is shareable across processes"""
 
-    def __init__(self, name, size):
-        self.size = size
+    SIZE = 256
+    MAX_ITEM_SIZE = 1024*64
+
+    def __init__(self, name):
         self.name = name
-        self.data = {}
-        self.memory = self._memory(name, size)
-        self._write_memory()
+        self.memory = self._memory(name)
 
     def get(self, key):
         """Gets item from cache"""
-        self._read_memory()
-        return self.data.get(key)
+        index = self._hash(key)
+        value = self.memory[index]
+        return value.rstrip(b'x\00') or None
 
     def set(self, key, value):
         """Sets item in cache"""
-        self.data[key] = value
-        self._write_memory()
+        index = self._hash(key)
+        value_bytes = bytes(value, 'utf-8')
+        self.memory[index] = self._padded_bytes(value_bytes)
 
-    def shutdown(self):
-        """Clean up shared memory and shutdown cache"""
-        self.memory.close()
-        self.memory.unlink()
+    def close(self):
+        self.memory.shm.close()
 
-    def _write_memory(self):
-        """Writes data into shared memory buffer"""
-        try:
-            data = self._data_size().to_bytes(4, "big") + self._data_to_bytes()
-            self.memory.buf[:self._data_size()+4] = data
-        except ValueError:
-            print("data size: ", len(data))
-            print("buffer slot size:", self._data_size()+4)
+    def unlink(self):
+        self.memory.shm.unlink()
 
-    def _read_memory(self):
-        """Reads data from shared memory buffer"""
-        data = self.memory.buf.tobytes()
-        size = int.from_bytes(data[:4], "big")
-        self.data = json.loads(data[4:size+4])
+    def _hash(self, key):
+        hkey = sha256(key.encode())
+        index = int(hkey.hexdigest(), 16)
+        return index % self.SIZE
 
-    def _memory(self, name, size):
+    def _padded_bytes(self, value):
+        return value + b'\x00'*(self.MAX_ITEM_SIZE - len(value))
+
+    def _memory(self, name):
         """Link to existing shared memory cache or create a new one"""
         try:
-            return SharedMemory(name=name)
+            return ShareableList(name=name)
         except FileNotFoundError:
-            return SharedMemory(name=name, size=size, create=True)
-
-    def _data_to_bytes(self):
-        """Serialize data"""
-        return json.dumps(self.data).encode()
-
-    def _data_size(self):
-        return len(self._data_to_bytes())
+            # hacky setting of cache size... 256 slots of 64KB each
+            sequence = [self._padded_bytes(b'')] * self.SIZE
+            return ShareableList(name=name, sequence=sequence)
