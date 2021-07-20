@@ -1,11 +1,14 @@
-import json
-import sys
-from multiprocessing.shared_memory import ShareableList, SharedMemory
+from multiprocessing.shared_memory import ShareableList
 from hashlib import sha256
 
 
 class SharedCache:
-    """In memory cache that is shareable across processes"""
+    """Psuedo "hash table" in memory cache that is shareable across processes"""
+
+    # TODO:
+    #  - Change hash algo
+    #  - Handle conflicts
+    #  - Improve sizing constraints
 
     SIZE = 256
     MAX_ITEM_SIZE = 1024*64
