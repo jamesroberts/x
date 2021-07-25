@@ -1,12 +1,10 @@
 from multiprocessing.shared_memory import ShareableList
-from hashlib import sha256
 
 
 class SharedCache:
     """Psuedo "hash table" in memory cache that is shareable across processes"""
 
     # TODO:
-    #  - Change hash algo
     #  - Handle conflicts
     #  - Improve sizing constraints
 
@@ -36,9 +34,7 @@ class SharedCache:
         self.memory.shm.unlink()
 
     def _hash(self, key):
-        hkey = sha256(key.encode())
-        index = int(hkey.hexdigest(), 16)
-        return index % self.SIZE
+        return hash(key) % self.SIZE
 
     def _padded_bytes(self, value):
         return value + b'\x00'*(self.MAX_ITEM_SIZE - len(value))
